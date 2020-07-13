@@ -13,21 +13,23 @@ import (
 
 type Handler struct {
 	jwtGenerator interfaces.IJwtGenerator
+	jwtHandler   interfaces.IJwtHandler
 }
 
-func NewHandler(jwtGenerator interfaces.IJwtGenerator) Handler {
+func NewHandler(jwtGenerator interfaces.IJwtGenerator, jwtHandler interfaces.IJwtHandler) Handler {
 	return Handler{
 		jwtGenerator: jwtGenerator,
+		jwtHandler:   jwtHandler,
 	}
 }
 
 const (
-	USER_NAME     = "master"
-	PASSWORD      = "password"
-	TOKEN_EXPIRED = 60 * 60 * 24
+	USER_NAME           = "master"
+	PASSWORD            = "password"
+	TOKEN_EXPIRED int64 = 60 * 60 * 24
 )
 
-func (handler Handler) LoginHandler(w http.ResponseWriter, req *http.Request) {
+func (handler Handler) Login(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -64,4 +66,17 @@ func (handler Handler) LoginHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	w.Write(json)
+}
+
+func (handler Handler) CheckToken(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	token := req.Header.Get("Authorization")
+	err := handler.jwtHandler.Verify(token)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }

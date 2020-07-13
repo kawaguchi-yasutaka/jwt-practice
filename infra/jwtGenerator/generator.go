@@ -16,7 +16,12 @@ func NewJwtGenerator(key []byte) interfaces.IJwtGenerator {
 }
 
 func (generator JwtGenerator) GenerateToken(content map[string]interface{}) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims(content))
+	//token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims(content))
+	token := jwt.New(jwt.SigningMethodRS256)
+	claims := token.Claims.(jwt.MapClaims)
+	for k, v := range content {
+		claims[k] = v
+	}
 	key, err := jwt.ParseRSAPrivateKeyFromPEM(generator.key)
 	if err != nil {
 		return "", err

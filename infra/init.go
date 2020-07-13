@@ -3,12 +3,14 @@ package infra
 import (
 	"io/ioutil"
 	"jwt-practice/infra/jwtGenerator"
+	"jwt-practice/infra/jwtHandler"
 	"jwt-practice/interfaces"
 	"os"
 )
 
 type Infra struct {
 	JwtGenerator interfaces.IJwtGenerator
+	JwtHandler   interfaces.IJwtHandler
 }
 
 func InitInfra() Infra {
@@ -21,17 +23,19 @@ func InitInfra() Infra {
 		panic(err)
 	}
 	defer fSKey.Close()
-	//fPKey, err := os.Open("../demo.pub.pkcs8")
-	//if err != nil {
-	//	panic(err)
-	//}
-	//pKey ,err := ioutil.ReadAll(fPKey)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer fPKey.Close()
+	fPKey, err := os.Open("./demo.pub")
+	if err != nil {
+		panic(err)
+	}
+	pKey, err := ioutil.ReadAll(fPKey)
+	if err != nil {
+		panic(err)
+	}
+	defer fPKey.Close()
 	jwtGenerator := jwtGenerator.NewJwtGenerator(sKey)
+	jwtHandler := jwtHandler.NewJwtHandler(pKey)
 	return Infra{
 		JwtGenerator: jwtGenerator,
+		JwtHandler:   jwtHandler,
 	}
 }
